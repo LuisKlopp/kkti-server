@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
+import { FindOneOptions, Repository } from 'typeorm';
 
 import { CreateUserGeneralDto } from './dto/create-user-general.dto';
 import { CreateUserKakaoDto } from './dto/create-user-kakao.dto';
@@ -21,8 +21,11 @@ export class UserService {
     return this.userRepository.findOneBy({ snsId, provider });
   }
 
-  async findById(id: number): Promise<User | null> {
-    return this.userRepository.findOneBy({ id });
+  async findById(id: number, options?: FindOneOptions<User>) {
+    return this.userRepository.findOne({
+      where: { id },
+      ...options,
+    });
   }
 
   async findByEmail(email: string): Promise<User | null> {

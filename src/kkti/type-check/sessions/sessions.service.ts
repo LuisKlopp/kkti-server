@@ -6,7 +6,8 @@ import { DataSource, Repository } from 'typeorm';
 import {
   calculateExpressedStyle,
   calculateMbti,
-  // logMbtiDebug,
+  calculateMbtiRatios,
+  logMbtiDebug,
 } from '../../utils/mbti-utils';
 import { getSessionMutex } from '../../utils/mutex';
 import { Answer } from '../answers/entities/answer.entity';
@@ -87,11 +88,14 @@ export class SessionsService {
 
         const mbti = calculateMbti(scores);
         const expressedStyle = calculateExpressedStyle(scores);
+        logMbtiDebug(scores, mbti, expressedStyle);
+        const ratios = calculateMbtiRatios(scores);
 
-        // logMbtiDebug(scores, mbti, expressedStyle);
-
-        session.mbtiResult = mbti;
-        session.expressedStyle = expressedStyle;
+        Object.assign(session, {
+          mbtiResult: mbti,
+          expressedStyle,
+          ...ratios,
+        });
 
         await manager.save(session);
 

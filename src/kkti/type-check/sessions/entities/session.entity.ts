@@ -16,7 +16,7 @@ export class Session {
   id: number;
 
   @ManyToOne(() => User, (user) => user.sessions, {
-    onDelete: 'CASCADE', // 🔥 유저 삭제 시 세션도 자동 삭제
+    onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -32,6 +32,30 @@ export class Session {
 
   @Column({ name: 'expressed_style', nullable: true })
   expressedStyle: string;
+
+  @Column('tinyint', { name: 'e_ratio', unsigned: true, nullable: true })
+  eRatio: number;
+
+  @Column('tinyint', { name: 'i_ratio', unsigned: true, nullable: true })
+  iRatio: number;
+
+  @Column('tinyint', { name: 's_ratio', unsigned: true, nullable: true })
+  sRatio: number;
+
+  @Column('tinyint', { name: 'n_ratio', unsigned: true, nullable: true })
+  nRatio: number;
+
+  @Column('tinyint', { name: 't_ratio', unsigned: true, nullable: true })
+  tRatio: number;
+
+  @Column('tinyint', { name: 'f_ratio', unsigned: true, nullable: true })
+  fRatio: number;
+
+  @Column('tinyint', { name: 'j_ratio', unsigned: true, nullable: true })
+  jRatio: number;
+
+  @Column('tinyint', { name: 'p_ratio', unsigned: true, nullable: true })
+  pRatio: number;
 
   @OneToMany(() => Answer, (answer) => answer.session, { cascade: true })
   answers: Answer[];

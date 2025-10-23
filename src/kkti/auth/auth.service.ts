@@ -20,9 +20,11 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
   ) {}
-
   async getMe(userId: number) {
-    const user = await this.users.findById(userId);
+    const user = await this.users.findById(userId, {
+      relations: ['sessions'],
+    });
+
     if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
 
     const {
@@ -34,7 +36,13 @@ export class AuthService {
       freeExpressed,
       premiumResult,
       premiumExpressed,
+      sessions,
     } = user;
+
+    const latestSession = sessions?.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    )[0];
+
     return {
       id,
       name,
@@ -44,6 +52,21 @@ export class AuthService {
       freeExpressed,
       premiumResult,
       premiumExpressed,
+      latestSession: latestSession
+        ? {
+            mbtiResult: latestSession.mbtiResult,
+            expressedStyle: latestSession.expressedStyle,
+            eRatio: latestSession.eRatio,
+            iRatio: latestSession.iRatio,
+            sRatio: latestSession.sRatio,
+            nRatio: latestSession.nRatio,
+            tRatio: latestSession.tRatio,
+            fRatio: latestSession.fRatio,
+            jRatio: latestSession.jRatio,
+            pRatio: latestSession.pRatio,
+            createdAt: latestSession.createdAt,
+          }
+        : null,
     };
   }
 
