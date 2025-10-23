@@ -41,14 +41,23 @@ export class AuthService {
   }
 
   async validateKakaoLogin(user: SocialUserAfterAuth) {
-    const { snsId, provider } = user;
+    const { snsId, provider, email } = user;
 
     let existingUser = await this.users.findBySnsId(snsId, provider);
+
     if (!existingUser) {
+      const userByEmail = await this.users.findByEmail(email);
+      if (userByEmail && userByEmail.provider === 'email') {
+        throw new BadRequestException(
+          '해당 이메일은 일반 회원가입으로 이미 가입되어 있습니다. 일반 로그인을 이용해주세요.',
+        );
+      }
+
       existingUser = await this.users.createKakaoUser(user);
     }
 
     const tokens = await this.issueTokens(existingUser.id);
+
     return {
       message: '카카오 로그인 성공',
       ...tokens,
@@ -60,6 +69,12 @@ export class AuthService {
     const user = await this.users.findByEmail(email);
     if (!user) throw new UnauthorizedException('존재하지 않는 이메일입니다.');
 
+    if (user.provider !== 'email') {
+      throw new BadRequestException(
+        '해당 이메일은 소셜 로그인을 통해 가입된 계정입니다. 카카오 로그인을 이용해주세요.',
+      );
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
@@ -70,7 +85,14 @@ export class AuthService {
 
   async registerUser(dto: CreateUserGeneralDto) {
     const existing = await this.users.findByEmail(dto.email);
-    if (existing) throw new BadRequestException('이미 존재하는 이메일입니다.');
+    if (existing) {
+      if (existing.provider === 'kakao') {
+        throw new BadRequestException(
+          '해당 이메일은 카카오로 이미 가입되어 있습니다. 카카오 로그인을 이용해주세요.',
+        );
+      }
+      throw new BadRequestException('이미 존재하는 이메일입니다.');
+    }
 
     const user = await this.users.createGeneralUser({
       ...dto,

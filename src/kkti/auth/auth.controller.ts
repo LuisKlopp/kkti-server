@@ -41,22 +41,29 @@ export class AuthController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const { accessToken, refreshToken } =
-      await this.authService.validateKakaoLogin(user);
-
     const type = (req.query.state as string) || 'normal';
     const redirectBaseUrl =
       type === 'plain'
         ? this.config.get<string>('CLIENT_AFTER_LOGIN_PLAIN_URL')
         : this.config.get<string>('CLIENT_AFTER_LOGIN_URL');
 
-    const jwtPayload = { accessToken, refreshToken };
-    const jwtToken = this.jwt.sign(jwtPayload, {
-      secret: this.config.get('JWT_RELAY_SECRET'),
-      expiresIn: '3m',
-    });
+    try {
+      const { accessToken, refreshToken } =
+        await this.authService.validateKakaoLogin(user);
 
-    return res.redirect(`${redirectBaseUrl}?token=${jwtToken}`);
+      const jwtPayload = { accessToken, refreshToken };
+      const jwtToken = this.jwt.sign(jwtPayload, {
+        secret: this.config.get('JWT_RELAY_SECRET'),
+        expiresIn: '3m',
+      });
+
+      return res.redirect(`${redirectBaseUrl}?token=${jwtToken}`);
+    } catch (error) {
+      const errorMessage = encodeURIComponent(
+        error.message || '카카오 로그인 중 오류가 발생했습니다.',
+      );
+      return res.redirect(`${redirectBaseUrl}?error=${errorMessage}`);
+    }
   }
 
   @Post('login')
