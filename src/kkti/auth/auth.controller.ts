@@ -7,8 +7,6 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
 
 import {
@@ -24,11 +22,7 @@ import { GetCurrentUserId } from './utils/get-current-user';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly config: ConfigService,
-    private readonly jwt: JwtService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Get('kakao')
   @UseGuards(KakaoAuthGuard)
@@ -41,29 +35,7 @@ export class AuthController {
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const type = (req.query.state as string) || 'normal';
-    const redirectBaseUrl =
-      type === 'plain'
-        ? this.config.get<string>('CLIENT_AFTER_LOGIN_PLAIN_URL')
-        : this.config.get<string>('CLIENT_AFTER_LOGIN_URL');
-
-    try {
-      const { accessToken, refreshToken } =
-        await this.authService.validateKakaoLogin(user);
-
-      const jwtPayload = { accessToken, refreshToken };
-      const jwtToken = this.jwt.sign(jwtPayload, {
-        secret: this.config.get('JWT_RELAY_SECRET'),
-        expiresIn: '3m',
-      });
-
-      return res.redirect(`${redirectBaseUrl}?token=${jwtToken}`);
-    } catch (error) {
-      const errorMessage = encodeURIComponent(
-        error.message || '카카오 로그인 중 오류가 발생했습니다.',
-      );
-      return res.redirect(`${redirectBaseUrl}?error=${errorMessage}`);
-    }
+    return this.authService.validateKakaoLogin(user, req, res);
   }
 
   @Post('login')

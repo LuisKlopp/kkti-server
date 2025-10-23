@@ -4,8 +4,10 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 
 import { SocialUserAfterAuth } from '../common/decorators/user.decorator';
 import { CreateUserGeneralDto } from '../user/dto/create-user-general.dto';
@@ -16,6 +18,7 @@ export class AuthService {
   constructor(
     private readonly users: UserService,
     private readonly jwt: JwtService,
+    private readonly config: ConfigService,
   ) {}
 
   async getMe(userId: number) {
@@ -44,29 +47,50 @@ export class AuthService {
     };
   }
 
-  async validateKakaoLogin(user: SocialUserAfterAuth) {
-    const { snsId, provider, email } = user;
+  async validateKakaoLogin(
+    user: SocialUserAfterAuth,
+    req: Request,
+    res: Response,
+  ) {
+    const type = (req.query.state as string) || 'normal';
+    const redirectBaseUrl =
+      type === 'plain'
+        ? this.config.get<string>('CLIENT_AFTER_LOGIN_PLAIN_URL')
+        : this.config.get<string>('CLIENT_AFTER_LOGIN_URL');
 
-    let existingUser = await this.users.findBySnsId(snsId, provider);
+    try {
+      const { snsId, provider, email } = user;
 
-    if (!existingUser) {
-      const userByEmail = await this.users.findByEmail(email);
-      if (userByEmail && userByEmail.provider === 'email') {
-        throw new BadRequestException(
-          '해당 이메일은 일반 회원가입으로 이미 가입되어 있습니다. 일반 로그인을 이용해주세요.',
-        );
+      let existingUser = await this.users.findBySnsId(snsId, provider);
+
+      if (!existingUser) {
+        const userByEmail = await this.users.findByEmail(email);
+        if (userByEmail && userByEmail.provider === 'email') {
+          throw new BadRequestException(
+            '해당 이메일은 일반 회원가입으로 이미 가입되어 있습니다. 일반 로그인을 이용해주세요.',
+          );
+        }
+
+        existingUser = await this.users.createKakaoUser(user);
       }
 
-      existingUser = await this.users.createKakaoUser(user);
+      const { accessToken, refreshToken } = await this.issueTokens(
+        existingUser.id,
+      );
+
+      const relayPayload = { accessToken, refreshToken };
+      const relayToken = this.jwt.sign(relayPayload, {
+        secret: this.config.get('JWT_RELAY_SECRET'),
+        expiresIn: '1m',
+      });
+
+      return res.redirect(`${redirectBaseUrl}?token=${relayToken}`);
+    } catch (error) {
+      const errorMessage = encodeURIComponent(
+        error.message || '카카오 로그인 중 오류가 발생했습니다.',
+      );
+      return res.redirect(`${redirectBaseUrl}?error=${errorMessage}`);
     }
-
-    const tokens = await this.issueTokens(existingUser.id);
-
-    return {
-      message: '카카오 로그인 성공',
-      ...tokens,
-      userId: existingUser.id,
-    };
   }
 
   async validateEmailLogin(email: string, password: string) {
@@ -126,7 +150,7 @@ export class AuthService {
   private async generateAccessToken(userId: number) {
     return this.jwt.sign(
       { sub: userId },
-      { secret: process.env.JWT_ACCESS_SECRET, expiresIn: '10s' },
+      { secret: process.env.JWT_ACCESS_SECRET, expiresIn: '5h' },
     );
   }
 
