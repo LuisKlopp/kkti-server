@@ -25,6 +25,8 @@ export class AuthService {
     const {
       id,
       name,
+      provider,
+      email,
       freeResult,
       freeExpressed,
       premiumResult,
@@ -33,6 +35,8 @@ export class AuthService {
     return {
       id,
       name,
+      provider,
+      email,
       freeResult,
       freeExpressed,
       premiumResult,
