@@ -27,17 +27,7 @@ export class AuthService {
 
     if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
 
-    const {
-      id,
-      name,
-      provider,
-      email,
-      freeResult,
-      freeExpressed,
-      premiumResult,
-      premiumExpressed,
-      sessions,
-    } = user;
+    const { id, name, provider, email, sessions } = user;
 
     const latestSession = sessions?.sort(
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
@@ -48,10 +38,6 @@ export class AuthService {
       name,
       provider,
       email,
-      freeResult,
-      freeExpressed,
-      premiumResult,
-      premiumExpressed,
       latestSession: latestSession
         ? {
             mbtiResult: latestSession.mbtiResult,

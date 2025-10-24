@@ -56,13 +56,6 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  async updateFreeResult(userId: number, mbti: string, expressedStyle: string) {
-    await this.userRepository.update(userId, {
-      freeResult: mbti,
-      freeExpressed: expressedStyle,
-    });
-  }
-
   async deleteKakaoUser(user: User) {
     const adminKey = this.configService.get<string>('KAKAO_ADMIN_KEY');
 

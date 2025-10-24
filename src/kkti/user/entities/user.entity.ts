@@ -40,18 +40,6 @@ export class User {
   @Column({ name: 'identity_verification_id', nullable: true })
   identityVerificationId?: string;
 
-  @Column({ name: 'free_result', nullable: true })
-  freeResult?: string;
-
-  @Column({ name: 'free_expressed', nullable: true })
-  freeExpressed?: string;
-
-  @Column({ name: 'premium_result', nullable: true })
-  premiumResult?: string;
-
-  @Column({ name: 'premium_expressed', nullable: true })
-  premiumExpressed?: string;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

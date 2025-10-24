@@ -112,8 +112,6 @@ export class SessionsService {
 
     const { mbti, expressedStyle } = await this.calculateMbtiResult(session.id);
 
-    await this.userService.updateFreeResult(userId, mbti, expressedStyle);
-
     return { mbti, expressedStyle };
   }
 
