@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -12,13 +13,23 @@ import { Request, Response } from 'express';
 import { SocialUserAfterAuth } from '../common/decorators/user.decorator';
 import { CreateUserGeneralDto } from '../user/dto/create-user-general.dto';
 import { UserService } from '../user/user.service';
+import {
+  ACCESS_TOKEN_JWT,
+  REFRESH_TOKEN_JWT,
+  RELAY_TOKEN_JWT,
+} from './token/token.constants';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly users: UserService,
-    private readonly jwt: JwtService,
     private readonly config: ConfigService,
+    @Inject(ACCESS_TOKEN_JWT)
+    private readonly accessTokenService: JwtService,
+    @Inject(REFRESH_TOKEN_JWT)
+    private readonly refreshTokenService: JwtService,
+    @Inject(RELAY_TOKEN_JWT)
+    private readonly relayTokenService: JwtService,
   ) {}
   async getMe(userId: number) {
     const user = await this.users.findById(userId, {
@@ -83,15 +94,10 @@ export class AuthService {
         existingUser = await this.users.createKakaoUser(user);
       }
 
-      const { accessToken, refreshToken } = await this.issueTokens(
-        existingUser.id,
-      );
+      const { accessToken, refreshToken } = this.issueTokens(existingUser.id);
 
       const relayPayload = { accessToken, refreshToken };
-      const relayToken = this.jwt.sign(relayPayload, {
-        secret: this.config.get('JWT_RELAY_SECRET'),
-        expiresIn: '1m',
-      });
+      const relayToken = this.relayTokenService.sign(relayPayload);
 
       return res.redirect(`${redirectBaseUrl}?token=${relayToken}`);
     } catch (error) {
@@ -116,7 +122,7 @@ export class AuthService {
     if (!isMatch)
       throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
 
-    const tokens = await this.issueTokens(user.id);
+    const tokens = this.issueTokens(user.id);
     return { message: '이메일 로그인 성공', ...tokens, userId: user.id };
   }
 
@@ -136,7 +142,7 @@ export class AuthService {
       provider: 'email',
     });
 
-    const { accessToken, refreshToken } = await this.issueTokens(user.id);
+    const { accessToken, refreshToken } = this.issueTokens(user.id);
 
     return {
       message: '회원가입 및 로그인 완료',
@@ -147,26 +153,20 @@ export class AuthService {
   }
 
   async reissueAccessToken(userId: number) {
-    return { accessToken: await this.generateAccessToken(userId) };
+    return { accessToken: this.generateAccessToken(userId) };
   }
 
-  private async issueTokens(userId: number) {
-    const accessToken = await this.generateAccessToken(userId);
+  private issueTokens(userId: number) {
+    const accessToken = this.generateAccessToken(userId);
     const refreshToken = this.generateRefreshToken(userId);
     return { accessToken, refreshToken };
   }
 
-  private async generateAccessToken(userId: number) {
-    return this.jwt.sign(
-      { sub: userId },
-      { secret: process.env.JWT_ACCESS_SECRET, expiresIn: '5h' },
-    );
+  private generateAccessToken(userId: number) {
+    return this.accessTokenService.sign({ sub: userId });
   }
 
   private generateRefreshToken(userId: number) {
-    return this.jwt.sign(
-      { sub: userId },
-      { secret: process.env.JWT_REFRESH_SECRET, expiresIn: '7d' },
-    );
+    return this.refreshTokenService.sign({ sub: userId });
   }
 }
