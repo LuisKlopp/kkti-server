@@ -7,7 +7,6 @@ import {
   calculateExpressedStyle,
   calculateMbti,
   calculateMbtiRatios,
-  logMbtiDebug,
 } from '../../utils/mbti-utils';
 import { getSessionMutex } from '../../utils/mutex';
 import { Answer } from '../answers/entities/answer.entity';
@@ -88,7 +87,6 @@ export class SessionsService {
 
         const mbti = calculateMbti(scores);
         const expressedStyle = calculateExpressedStyle(scores);
-        logMbtiDebug(scores, mbti, expressedStyle);
         const ratios = calculateMbtiRatios(scores);
 
         Object.assign(session, {
@@ -117,5 +115,24 @@ export class SessionsService {
 
   async findById(id: number): Promise<Session | null> {
     return this.sessionsRepository.findOne({ where: { id } });
+  }
+
+  async findByShareUuid(shareUuid: string): Promise<Partial<Session>> {
+    const session = await this.sessionsRepository.findOne({
+      where: { shareUuid },
+    });
+
+    if (!session) {
+      throw new NotFoundException('해당 공유 결과를 찾을 수 없습니다.');
+    }
+
+    const {
+      id: _id,
+      userId: _userId,
+      answers: _answers,
+      ...publicData
+    } = session;
+
+    return publicData;
   }
 }

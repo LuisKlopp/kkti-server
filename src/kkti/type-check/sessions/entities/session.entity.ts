@@ -57,6 +57,16 @@ export class Session {
   @Column('tinyint', { name: 'p_ratio', unsigned: true, nullable: true })
   pRatio: number;
 
+  @Column({
+    name: 'share_uuid',
+    type: 'char',
+    length: 36,
+    unique: true,
+    nullable: false,
+    default: () => 'uuid()',
+  })
+  shareUuid: string;
+
   @OneToMany(() => Answer, (answer) => answer.session, { cascade: true })
   answers: Answer[];
 }

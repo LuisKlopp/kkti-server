@@ -61,6 +61,7 @@ export class AuthService {
             fRatio: latestSession.fRatio,
             jRatio: latestSession.jRatio,
             pRatio: latestSession.pRatio,
+            shareUuid: latestSession.shareUuid,
             createdAt: latestSession.createdAt,
           }
         : null,
