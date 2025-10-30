@@ -26,4 +26,11 @@ export class SessionsController {
   async findOne(@Param('id') id: number): Promise<Session | null> {
     return this.sessionsService.findById(id);
   }
+
+  @Get('share/:shareUuid')
+  async findByShareUuid(
+    @Param('shareUuid') shareUuid: string,
+  ): Promise<Partial<Session> | null> {
+    return this.sessionsService.findByShareUuid(shareUuid);
+  }
 }
