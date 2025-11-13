@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
+import { MbtiProfilesModule } from '../mbti-profiles/mbti-profiles.module';
 import { KktiUserModule } from '../user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -24,6 +25,7 @@ import {
     ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     KktiUserModule,
+    MbtiProfilesModule,
   ],
   controllers: [AuthController],
   providers: [
