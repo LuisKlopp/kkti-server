@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './kkti/auth/auth.module';
 import { CertificationModule } from './kkti/certification/certification.module';
+import { MbtiProfilesModule } from './kkti/mbti-profiles/mbti-profiles.module';
 import { AnswersModule } from './kkti/type-check/answers/answers.module';
 import { QuestionsModule } from './kkti/type-check/questions/questions.module';
 import { SessionsModule } from './kkti/type-check/sessions/sessions.module';
 import { KktiUserModule } from './kkti/user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     QuestionsModule,
     SessionsModule,
     KktiUserModule,
+    MbtiProfilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
