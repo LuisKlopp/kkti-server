@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { MbtiMainProfile } from 'src/kkti/mbti-profiles/entities/mbti-main-profile.entity';
+import { MbtiProfilesService } from 'src/kkti/mbti-profiles/mbti-profiles.service';
 import { UserService } from 'src/kkti/user/user.service';
 import { DataSource, Repository } from 'typeorm';
 
@@ -18,6 +20,7 @@ export class SessionsService {
   constructor(
     @InjectRepository(Session)
     private readonly sessionsRepository: Repository<Session>,
+    private readonly mbtiProfiles: MbtiProfilesService,
     private readonly userService: UserService,
     private readonly dataSource: DataSource,
   ) {}
@@ -117,10 +120,16 @@ export class SessionsService {
     return this.sessionsRepository.findOne({ where: { id } });
   }
 
-  async findByShareUuid(shareUuid: string): Promise<Partial<Session>> {
+  async findByShareUuid(
+    shareUuid: string,
+  ): Promise<Partial<Session> & { mainProfile: MbtiMainProfile }> {
     const session = await this.sessionsRepository.findOne({
       where: { shareUuid },
     });
+
+    const { mbtiResult } = session;
+
+    const mainProfile = await this.mbtiProfiles.findMainProfile(mbtiResult);
 
     if (!session) {
       throw new NotFoundException('해당 공유 결과를 찾을 수 없습니다.');
@@ -133,6 +142,9 @@ export class SessionsService {
       ...publicData
     } = session;
 
-    return publicData;
+    return {
+      ...publicData,
+      mainProfile,
+    };
   }
 }
