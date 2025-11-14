@@ -9,6 +9,9 @@ export class MbtiMainProfile {
   @Column({ length: 10 })
   mbti: string;
 
+  @Column({ length: 45 })
+  animals: string;
+
   @Column({ type: 'text' })
   overview: string;
 

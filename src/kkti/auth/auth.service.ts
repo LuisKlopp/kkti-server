@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 
 import { SocialUserAfterAuth } from '../common/decorators/user.decorator';
+import { MbtiProfilesService } from '../mbti-profiles/mbti-profiles.service';
 import { CreateUserGeneralDto } from '../user/dto/create-user-general.dto';
 import { UserService } from '../user/user.service';
 import {
@@ -24,6 +25,7 @@ export class AuthService {
   constructor(
     private readonly users: UserService,
     private readonly config: ConfigService,
+    private readonly mbtiProfiles: MbtiProfilesService,
     @Inject(ACCESS_TOKEN_JWT)
     private readonly accessTokenService: JwtService,
     @Inject(REFRESH_TOKEN_JWT)
@@ -44,6 +46,10 @@ export class AuthService {
       (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
     )[0];
 
+    const { mbtiResult } = latestSession;
+
+    const mainProfile = await this.mbtiProfiles.findMainProfile(mbtiResult);
+
     return {
       id,
       name,
@@ -63,6 +69,7 @@ export class AuthService {
             pRatio: latestSession.pRatio,
             shareUuid: latestSession.shareUuid,
             createdAt: latestSession.createdAt,
+            mainProfile,
           }
         : null,
     };
