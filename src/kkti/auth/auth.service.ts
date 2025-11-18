@@ -76,6 +76,11 @@ export class AuthService {
       latestSession.mbtiResult,
     );
 
+    const expressedProfile = await this.mbtiProfiles.findExpressedProfile(
+      latestSession.mbtiResult,
+      latestSession.expressedStyle,
+    );
+
     const sessionData = {
       mbtiResult: latestSession.mbtiResult,
       expressedStyle: latestSession.expressedStyle,
@@ -90,6 +95,7 @@ export class AuthService {
       shareUuid: latestSession.shareUuid,
       createdAt: latestSession.createdAt,
       mainProfile,
+      expressedProfile,
     };
 
     return {
