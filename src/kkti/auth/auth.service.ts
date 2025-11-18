@@ -38,40 +38,69 @@ export class AuthService {
       relations: ['sessions'],
     });
 
-    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
+    if (!user) {
+      throw new NotFoundException('유저를 찾을 수 없습니다.');
+    }
 
-    const { id, name, provider, email, sessions } = user;
+    const {
+      id,
+      name,
+      provider,
+      email,
+      sessions,
+      gender,
+      birthYear,
+      phoneNumber,
+    } = user;
 
-    const latestSession = sessions?.sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-    )[0];
+    const latestSession = sessions?.length
+      ? [...sessions].sort(
+          (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+        )[0]
+      : null;
 
-    const { mbtiResult } = latestSession;
+    if (!latestSession) {
+      return {
+        id,
+        name,
+        provider,
+        email,
+        phoneNumber,
+        gender,
+        birthYear,
+        latestSession: null,
+      };
+    }
 
-    const mainProfile = await this.mbtiProfiles.findMainProfile(mbtiResult);
+    const mainProfile = await this.mbtiProfiles.findMainProfile(
+      latestSession.mbtiResult,
+    );
+
+    const sessionData = {
+      mbtiResult: latestSession.mbtiResult,
+      expressedStyle: latestSession.expressedStyle,
+      eRatio: latestSession.eRatio,
+      iRatio: latestSession.iRatio,
+      sRatio: latestSession.sRatio,
+      nRatio: latestSession.nRatio,
+      tRatio: latestSession.tRatio,
+      fRatio: latestSession.fRatio,
+      jRatio: latestSession.jRatio,
+      pRatio: latestSession.pRatio,
+      shareUuid: latestSession.shareUuid,
+      createdAt: latestSession.createdAt,
+      mainProfile,
+    };
 
     return {
       id,
       name,
       provider,
       email,
-      latestSession: latestSession
-        ? {
-            mbtiResult: latestSession.mbtiResult,
-            expressedStyle: latestSession.expressedStyle,
-            eRatio: latestSession.eRatio,
-            iRatio: latestSession.iRatio,
-            sRatio: latestSession.sRatio,
-            nRatio: latestSession.nRatio,
-            tRatio: latestSession.tRatio,
-            fRatio: latestSession.fRatio,
-            jRatio: latestSession.jRatio,
-            pRatio: latestSession.pRatio,
-            shareUuid: latestSession.shareUuid,
-            createdAt: latestSession.createdAt,
-            mainProfile,
-          }
-        : null,
+      gender,
+      birthYear,
+      phoneNumber,
+      latestSession: sessionData,
     };
   }
 
