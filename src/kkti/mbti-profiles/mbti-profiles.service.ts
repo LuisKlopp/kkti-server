@@ -22,14 +22,14 @@ export class MbtiProfilesService {
     return data;
   }
 
-  async findExpressedProfile(mbti: string, expressed_style: string) {
+  async findExpressedProfile(mbti: string, expressedStyle: string) {
     const data = await this.expressedRepo.findOne({
-      where: { mbti, expressed_style },
+      where: { mbti, expressedStyle },
     });
 
     if (!data) {
       throw new NotFoundException(
-        `Expressed MBTI profile not found: ${mbti}/${expressed_style}`,
+        `Expressed MBTI profile not found: ${mbti}/${expressedStyle}`,
       );
     }
     return data;

@@ -12,15 +12,21 @@ export class MbtiMainProfile {
   @Column({ length: 45 })
   animals: string;
 
+  @Column({ length: 50 })
+  nickname: string;
+
   @Column({ type: 'text' })
   overview: string;
 
-  @Column({ type: 'simple-json', nullable: true })
-  strengths: string[];
+  @Column({ type: 'text' })
+  strengths: string;
 
-  @Column({ type: 'simple-json', nullable: true })
-  love_style: string[];
+  @Column({ type: 'text', name: 'love_style' })
+  loveStyle: string;
 
-  @Column({ type: 'simple-json', nullable: true })
-  growth_points: string[];
+  @Column({ type: 'text' })
+  celebrities: string;
+
+  @Column({ type: 'text', name: 'growth_points' })
+  growthPoints: string;
 }
