@@ -27,6 +27,9 @@ export class MbtiMainProfile {
   @Column({ type: 'text' })
   celebrities: string;
 
+  @Column({ type: 'text', name: 'love_matches' })
+  loveMatches: string;
+
   @Column({ type: 'text', name: 'growth_points' })
   growthPoints: string;
 }
