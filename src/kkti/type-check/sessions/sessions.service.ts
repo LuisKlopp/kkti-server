@@ -5,6 +5,7 @@ import { MbtiMainProfile } from 'src/kkti/mbti-profiles/entities/mbti-main-profi
 import { MbtiProfilesService } from 'src/kkti/mbti-profiles/mbti-profiles.service';
 import { UserService } from 'src/kkti/user/user.service';
 import { DataSource, Repository } from 'typeorm';
+import { v4 as uuid } from 'uuid';
 
 import {
   applyTieBreakToDimension,
@@ -33,6 +34,7 @@ export class SessionsService {
   ): Promise<Session> {
     const session = this.sessionsRepository.create({
       userId,
+      shareUuid: uuid(),
       answers: answers.map((ans) =>
         Object.assign(new Answer(), {
           question: { id: ans.questionId },
@@ -177,5 +179,13 @@ export class SessionsService {
       mainProfile,
       expressedProfile,
     };
+  }
+
+  async findAllByUser(userId: number) {
+    return this.sessionsRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+      select: ['id', 'mbtiResult', 'expressedStyle', 'createdAt'],
+    });
   }
 }

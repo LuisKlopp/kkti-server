@@ -63,7 +63,6 @@ export class Session {
     length: 36,
     unique: true,
     nullable: false,
-    default: () => 'uuid()',
   })
   shareUuid: string;
 

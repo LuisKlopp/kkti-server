@@ -11,6 +11,12 @@ export class SessionsController {
   constructor(private readonly sessionsService: SessionsService) {}
 
   @UseGuards(AccessTokenGuard)
+  @Get('me')
+  async findMySessions(@GetCurrentUserId() userId: number) {
+    return this.sessionsService.findAllByUser(userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
   @Post()
   async createSessionWithAnswers(
     @GetCurrentUserId() userId: number,
