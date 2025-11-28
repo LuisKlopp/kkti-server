@@ -8,7 +8,7 @@ import {
 
 import { Question } from './question.entity';
 
-@Entity({ database: 'kkti', name: 'shuffled_questions' })
+@Entity({ database: 'kkti', name: 'shuffled_questions_v2' })
 export class ShuffledQuestion {
   @PrimaryGeneratedColumn()
   id: number;
@@ -17,10 +17,10 @@ export class ShuffledQuestion {
   @JoinColumn({ name: 'question_id' })
   question: Question;
 
-  @Column({ type: 'text', name: 'option_a' })
+  @Column({ name: 'option_a', type: 'varchar', length: 500 })
   optionA: string;
 
-  @Column({ type: 'text', name: 'option_b' })
+  @Column({ name: 'option_b', type: 'varchar', length: 500 })
   optionB: string;
 
   @Column({
@@ -29,9 +29,9 @@ export class ShuffledQuestion {
   })
   dimension: 'EI' | 'SN' | 'TF' | 'JP';
 
-  @Column()
+  @Column({ type: 'int' })
   order: number;
 
-  @Column()
+  @Column({ type: 'int', default: 2 })
   version: number;
 }
