@@ -5,6 +5,16 @@ type DimensionScore = {
   JP: { J: number; P: number };
 };
 
+type DimensionPair = { A: number; B: number };
+
+type TieBreakParams = {
+  heavyA: number;
+  heavyB: number;
+  countA: number;
+  countB: number;
+  lastChoice: 'A' | 'B';
+};
+
 type MbtiRatios = {
   eRatio: number;
   iRatio: number;
@@ -16,6 +26,48 @@ type MbtiRatios = {
   pRatio: number;
 };
 
+export function applyTieBreakToDimension(
+  dim: 'EI' | 'SN' | 'TF' | 'JP',
+  scores: any,
+  tie: any,
+) {
+  const winner = applyTieBreak(scores, tie);
+
+  switch (dim) {
+    case 'EI':
+      if (winner === 'A') scores.E += 1;
+      else scores.I += 1;
+      return scores;
+
+    case 'SN':
+      if (winner === 'A') scores.S += 1;
+      else scores.N += 1;
+      return scores;
+
+    case 'TF':
+      if (winner === 'A') scores.T += 1;
+      else scores.F += 1;
+      return scores;
+
+    case 'JP':
+      if (winner === 'A') scores.J += 1;
+      else scores.P += 1;
+      return scores;
+  }
+}
+
+export function applyTieBreak(
+  pair: DimensionPair,
+  tie: TieBreakParams,
+): 'A' | 'B' {
+  if (pair.A !== pair.B) return pair.A > pair.B ? 'A' : 'B';
+
+  if (tie.heavyA !== tie.heavyB) return tie.heavyA > tie.heavyB ? 'A' : 'B';
+
+  if (tie.countA !== tie.countB) return tie.countA > tie.countB ? 'A' : 'B';
+
+  return tie.lastChoice;
+}
 export function calculateMbti(scores: DimensionScore): string {
   return (
     (scores.EI.E >= scores.EI.I ? 'E' : 'I') +
@@ -64,19 +116,31 @@ export function calculateExpressedStyle(scores: DimensionScore): string {
 }
 
 export function calculateMbtiRatios(scores: DimensionScore): MbtiRatios {
-  const percent = (a: number, b: number) =>
-    Math.round((a / (a + b || 1)) * 100);
+  const ratio = (a: number, b: number) => {
+    const total = a + b;
+    if (total === 0) return 50;
+
+    const raw = a / total;
+    return smoothPercent(raw);
+  };
 
   return {
-    eRatio: percent(scores.EI.E, scores.EI.I),
-    iRatio: percent(scores.EI.I, scores.EI.E),
-    sRatio: percent(scores.SN.S, scores.SN.N),
-    nRatio: percent(scores.SN.N, scores.SN.S),
-    tRatio: percent(scores.TF.T, scores.TF.F),
-    fRatio: percent(scores.TF.F, scores.TF.T),
-    jRatio: percent(scores.JP.J, scores.JP.P),
-    pRatio: percent(scores.JP.P, scores.JP.J),
+    eRatio: ratio(scores.EI.E, scores.EI.I),
+    iRatio: 100 - ratio(scores.EI.E, scores.EI.I),
+    sRatio: ratio(scores.SN.S, scores.SN.N),
+    nRatio: 100 - ratio(scores.SN.S, scores.SN.N),
+    tRatio: ratio(scores.TF.T, scores.TF.F),
+    fRatio: 100 - ratio(scores.TF.T, scores.TF.F),
+    jRatio: ratio(scores.JP.J, scores.JP.P),
+    pRatio: 100 - ratio(scores.JP.J, scores.JP.P),
   };
+}
+
+function smoothPercent(raw: number): number {
+  const strength = 10;
+  const scaled = 1 / (1 + Math.exp(-strength * (raw - 0.5)));
+
+  return Math.round(scaled * 100);
 }
 
 export function logMbtiDebug(

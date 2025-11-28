@@ -7,9 +7,11 @@ import { UserService } from 'src/kkti/user/user.service';
 import { DataSource, Repository } from 'typeorm';
 
 import {
+  applyTieBreakToDimension,
   calculateExpressedStyle,
   calculateMbti,
   calculateMbtiRatios,
+  logMbtiDebug,
 } from '../../utils/mbti-utils';
 import { getSessionMutex } from '../../utils/mutex';
 import { Answer } from '../answers/entities/answer.entity';
@@ -69,9 +71,25 @@ export class SessionsService {
           JP: { J: 0, P: 0 },
         };
 
+        const tieData = {
+          EI: { heavyA: 0, heavyB: 0, countA: 0, countB: 0, lastChoice: 'A' },
+          SN: { heavyA: 0, heavyB: 0, countA: 0, countB: 0, lastChoice: 'A' },
+          TF: { heavyA: 0, heavyB: 0, countA: 0, countB: 0, lastChoice: 'A' },
+          JP: { heavyA: 0, heavyB: 0, countA: 0, countB: 0, lastChoice: 'A' },
+        };
+
         session.answers.forEach((ans) => {
           const { dimension, weight = 1 } = ans.question;
           const isA = ans.choice === 'A';
+
+          const dim = dimension as keyof typeof tieData;
+          const data = tieData[dim];
+
+          isA ? data.countA++ : data.countB++;
+
+          if (weight === 2) isA ? data.heavyA++ : data.heavyB++;
+
+          data.lastChoice = isA ? 'A' : 'B';
 
           switch (dimension) {
             case 'EI':
@@ -89,6 +107,11 @@ export class SessionsService {
           }
         });
 
+        scores.EI = applyTieBreakToDimension('EI', scores.EI, tieData.EI);
+        scores.SN = applyTieBreakToDimension('SN', scores.SN, tieData.SN);
+        scores.TF = applyTieBreakToDimension('TF', scores.TF, tieData.TF);
+        scores.JP = applyTieBreakToDimension('JP', scores.JP, tieData.JP);
+
         const mbti = calculateMbti(scores);
         const expressedStyle = calculateExpressedStyle(scores);
         const ratios = calculateMbtiRatios(scores);
@@ -98,7 +121,7 @@ export class SessionsService {
           expressedStyle,
           ...ratios,
         });
-
+        logMbtiDebug(scores, mbti, expressedStyle);
         await manager.save(session);
 
         return { mbti, expressedStyle };
