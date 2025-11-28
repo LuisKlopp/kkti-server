@@ -11,7 +11,6 @@ import {
   calculateExpressedStyle,
   calculateMbti,
   calculateMbtiRatios,
-  logMbtiDebug,
 } from '../../utils/mbti-utils';
 import { getSessionMutex } from '../../utils/mutex';
 import { Answer } from '../answers/entities/answer.entity';
@@ -121,7 +120,7 @@ export class SessionsService {
           expressedStyle,
           ...ratios,
         });
-        logMbtiDebug(scores, mbti, expressedStyle);
+
         await manager.save(session);
 
         return { mbti, expressedStyle };

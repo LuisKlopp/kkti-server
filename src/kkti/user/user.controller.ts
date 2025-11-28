@@ -49,4 +49,13 @@ export class UserController {
       HttpStatus.BAD_REQUEST,
     );
   }
+
+  @Get()
+  async getAllUsers() {
+    const users = await this.userService.findAllUsers();
+    return {
+      count: users.length,
+      users,
+    };
+  }
 }

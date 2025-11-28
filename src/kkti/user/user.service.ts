@@ -106,4 +106,18 @@ export class UserService {
       deletedUserId: userId,
     };
   }
+
+  async findAllUsers() {
+    return this.userRepository.find({
+      select: [
+        'email',
+        'name',
+        'gender',
+        'phoneNumber',
+        'birthYear',
+        'createdAt',
+      ],
+      order: { createdAt: 'DESC' },
+    });
+  }
 }
