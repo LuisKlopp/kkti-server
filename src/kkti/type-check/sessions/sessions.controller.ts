@@ -16,6 +16,13 @@ export class SessionsController {
     return this.sessionsService.findAllByUser(userId);
   }
 
+  @Get('share/:shareUuid')
+  async findByShareUuid(
+    @Param('shareUuid') shareUuid: string,
+  ): Promise<Partial<Session> | null> {
+    return this.sessionsService.findByShareUuid(shareUuid);
+  }
+
   @UseGuards(AccessTokenGuard)
   @Post()
   async createSessionWithAnswers(
@@ -31,12 +38,5 @@ export class SessionsController {
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<Session | null> {
     return this.sessionsService.findById(id);
-  }
-
-  @Get('share/:shareUuid')
-  async findByShareUuid(
-    @Param('shareUuid') shareUuid: string,
-  ): Promise<Partial<Session> | null> {
-    return this.sessionsService.findByShareUuid(shareUuid);
   }
 }
