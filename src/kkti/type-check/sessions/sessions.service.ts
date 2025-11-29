@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { randomUUID } from 'crypto';
 import { MbtiExpressedProfile } from 'src/kkti/mbti-profiles/entities/mbti-expressed-profile.entity';
 import { MbtiMainProfile } from 'src/kkti/mbti-profiles/entities/mbti-main-profile.entity';
 import { MbtiProfilesService } from 'src/kkti/mbti-profiles/mbti-profiles.service';
 import { UserService } from 'src/kkti/user/user.service';
 import { DataSource, Repository } from 'typeorm';
-import { v4 as uuid } from 'uuid';
 
 import {
   applyTieBreakToDimension,
@@ -34,7 +34,7 @@ export class SessionsService {
   ): Promise<Session> {
     const session = this.sessionsRepository.create({
       userId,
-      shareUuid: uuid(),
+      shareUuid: randomUUID(),
       answers: answers.map((ans) =>
         Object.assign(new Answer(), {
           question: { id: ans.questionId },
