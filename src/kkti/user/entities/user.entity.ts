@@ -51,4 +51,15 @@ export class User {
 
   @Column({ name: 'is_test', type: 'boolean', default: false })
   isTest: boolean;
+
+  @Column({
+    name: 'consulting_mbti',
+    type: 'varchar',
+    length: 4,
+    nullable: true,
+  })
+  consultingMbti?: string;
+
+  @Column({ name: 'consulting_date', type: 'date', nullable: true })
+  consultingDate?: string;
 }

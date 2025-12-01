@@ -1,10 +1,12 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
   HttpException,
   HttpStatus,
   Param,
+  Patch,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -62,5 +64,17 @@ export class UserController {
       limit: Number(limit),
       search,
     });
+  }
+
+  @Patch(':id/consulting')
+  async updateConsulting(
+    @Param('id') id: number,
+    @Body()
+    body: {
+      consultingMbti: string;
+      consultingDate: string;
+    },
+  ) {
+    return this.userService.updateConsulting(+id, body);
   }
 }

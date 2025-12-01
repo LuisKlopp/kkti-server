@@ -51,6 +51,8 @@ export class AuthService {
       gender,
       birthYear,
       phoneNumber,
+      consultingMbti,
+      consultingDate,
     } = user;
 
     const latestSession = sessions?.length
@@ -68,6 +70,8 @@ export class AuthService {
         phoneNumber,
         gender,
         birthYear,
+        consultingMbti,
+        consultingDate,
         latestSession: null,
       };
     }
@@ -106,6 +110,8 @@ export class AuthService {
       gender,
       birthYear,
       phoneNumber,
+      consultingMbti,
+      consultingDate,
       latestSession: sessionData,
     };
   }

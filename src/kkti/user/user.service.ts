@@ -122,6 +122,7 @@ export class UserService {
 
     const [users, total] = await this.userRepository.findAndCount({
       select: [
+        'id',
         'email',
         'name',
         'gender',
@@ -129,6 +130,8 @@ export class UserService {
         'birthYear',
         'createdAt',
         'isTest',
+        'consultingMbti',
+        'consultingDate',
       ],
       where,
       order: { createdAt: 'DESC' },
@@ -141,6 +144,24 @@ export class UserService {
       page,
       limit,
       users,
+    };
+  }
+
+  async updateConsulting(
+    id: number,
+    data: { consultingMbti: string; consultingDate: string },
+  ) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('유저를 찾을 수 없습니다.');
+
+    user.consultingMbti = data.consultingMbti;
+    user.consultingDate = data.consultingDate;
+
+    await this.userRepository.save(user);
+
+    return {
+      message: '컨설팅 정보가 저장되었습니다.',
+      user,
     };
   }
 }
