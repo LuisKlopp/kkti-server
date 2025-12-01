@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import * as bcrypt from 'bcrypt';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindOneOptions, Like, Repository } from 'typeorm';
 
 import { CreateUserGeneralDto } from './dto/create-user-general.dto';
 import { CreateUserKakaoDto } from './dto/create-user-kakao.dto';
@@ -107,8 +107,20 @@ export class UserService {
     };
   }
 
-  async findAllUsers() {
-    return this.userRepository.find({
+  async findUsers({
+    page,
+    limit,
+    search,
+  }: {
+    page: number;
+    limit: number;
+    search?: string;
+  }) {
+    const where = search
+      ? [{ name: Like(`%${search}%`) }, { email: Like(`%${search}%`) }]
+      : undefined;
+
+    const [users, total] = await this.userRepository.findAndCount({
       select: [
         'email',
         'name',
@@ -117,7 +129,17 @@ export class UserService {
         'birthYear',
         'createdAt',
       ],
+      where,
       order: { createdAt: 'DESC' },
+      take: limit,
+      skip: (page - 1) * limit,
     });
+
+    return {
+      total,
+      page,
+      limit,
+      users,
+    };
   }
 }

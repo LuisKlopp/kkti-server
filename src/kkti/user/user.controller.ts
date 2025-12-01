@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 
@@ -51,11 +52,15 @@ export class UserController {
   }
 
   @Get()
-  async getAllUsers() {
-    const users = await this.userService.findAllUsers();
-    return {
-      count: users.length,
-      users,
-    };
+  async getUsers(
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+    @Query('search') search?: string,
+  ) {
+    return this.userService.findUsers({
+      page: Number(page),
+      limit: Number(limit),
+      search,
+    });
   }
 }
