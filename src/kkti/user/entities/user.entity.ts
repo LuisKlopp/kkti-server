@@ -48,4 +48,7 @@ export class User {
 
   @OneToMany(() => Session, (session) => session.user)
   sessions: Session[];
+
+  @Column({ name: 'is_test', type: 'boolean', default: false })
+  isTest: boolean;
 }

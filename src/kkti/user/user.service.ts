@@ -128,6 +128,7 @@ export class UserService {
         'phoneNumber',
         'birthYear',
         'createdAt',
+        'isTest',
       ],
       where,
       order: { createdAt: 'DESC' },
