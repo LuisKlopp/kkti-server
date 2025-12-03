@@ -171,12 +171,15 @@ export class UserService {
   }
 
   async getUserHistory(userId: number) {
-    const user = await this.userRepository.findOne({
+    const rawUser = await this.userRepository.findOne({
       where: { id: userId },
       select: ['consultingMbti'],
     });
 
-    if (!user) return null;
+    const user = {
+      consultingMbti: rawUser?.consultingMbti ?? null,
+      consultingDate: rawUser?.consultingDate ?? null,
+    };
 
     const sessions = await this.sessionsRepository.find({
       where: { userId },
@@ -185,7 +188,9 @@ export class UserService {
     });
 
     return {
-      user,
+      user: {
+        consultingMbti: user.consultingMbti ?? null,
+      },
       sessions,
     };
   }
