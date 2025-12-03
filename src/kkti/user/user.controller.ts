@@ -19,6 +19,11 @@ import { User } from './utils/user.decorator';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get(':id')
+  async getUserHistory(@Param('id') id: number) {
+    return this.userService.getUserHistory(id);
+  }
+
   @Get(':snsId')
   async getUser(@Param('snsId') snsId: string) {
     return this.userService.findBySnsId(snsId, 'kakao');

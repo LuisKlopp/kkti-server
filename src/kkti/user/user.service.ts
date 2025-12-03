@@ -5,6 +5,7 @@ import axios from 'axios';
 import * as bcrypt from 'bcrypt';
 import { FindOneOptions, Like, Repository } from 'typeorm';
 
+import { Session } from '../type-check/sessions/entities/session.entity';
 import { CreateUserGeneralDto } from './dto/create-user-general.dto';
 import { CreateUserKakaoDto } from './dto/create-user-kakao.dto';
 import { User } from './entities/user.entity';
@@ -14,6 +15,10 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Session)
+    private readonly sessionsRepository: Repository<Session>,
+
     private readonly configService: ConfigService,
   ) {}
 
@@ -162,6 +167,26 @@ export class UserService {
     return {
       message: '컨설팅 정보가 저장되었습니다.',
       user,
+    };
+  }
+
+  async getUserHistory(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['consultingMbti'],
+    });
+
+    if (!user) return null;
+
+    const sessions = await this.sessionsRepository.find({
+      where: { userId },
+      select: ['mbtiResult', 'createdAt'],
+      order: { createdAt: 'DESC' },
+    });
+
+    return {
+      user,
+      sessions,
     };
   }
 }
