@@ -34,4 +34,16 @@ export class MbtiProfilesService {
     }
     return data;
   }
+
+  async findAllMainProfiles(): Promise<MbtiMainProfile[]> {
+    return this.mainRepo.find({
+      order: { id: 'ASC' },
+    });
+  }
+
+  async findAllExpressedProfiles() {
+    return this.expressedRepo.find({
+      order: { id: 'ASC' },
+    });
+  }
 }

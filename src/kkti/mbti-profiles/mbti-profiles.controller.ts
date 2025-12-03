@@ -1,5 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 
+import { MbtiMainProfile } from './entities/mbti-main-profile.entity';
 import { MbtiProfilesService } from './mbti-profiles.service';
 
 @Controller('mbti-profiles')
@@ -11,6 +12,11 @@ export class MbtiProfilesController {
     return this.mbtiProfilesService.findMainProfile(mbti.toUpperCase());
   }
 
+  @Get('main')
+  async findAllMainProfiles(): Promise<MbtiMainProfile[]> {
+    return this.mbtiProfilesService.findAllMainProfiles();
+  }
+
   @Get('expressed/:mbti/:style')
   async getExpressed(
     @Param('mbti') mbti: string,
@@ -20,5 +26,10 @@ export class MbtiProfilesController {
       mbti.toUpperCase(),
       style.toUpperCase(),
     );
+  }
+
+  @Get('expressed/main')
+  findAll() {
+    return this.mbtiProfilesService.findAllExpressedProfiles();
   }
 }
