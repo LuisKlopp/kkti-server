@@ -176,11 +176,6 @@ export class UserService {
       select: ['consultingMbti'],
     });
 
-    const user = {
-      consultingMbti: rawUser?.consultingMbti ?? null,
-      consultingDate: rawUser?.consultingDate ?? null,
-    };
-
     const sessions = await this.sessionsRepository.find({
       where: { userId },
       select: ['mbtiResult', 'createdAt'],
@@ -189,7 +184,7 @@ export class UserService {
 
     return {
       user: {
-        consultingMbti: user.consultingMbti ?? null,
+        consultingMbti: rawUser?.consultingMbti ?? null,
       },
       sessions,
     };
