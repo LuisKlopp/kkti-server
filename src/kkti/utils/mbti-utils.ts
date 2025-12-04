@@ -43,23 +43,25 @@ function calcPercent(a: number, b: number) {
   const total = a + b;
   if (total === 0) return 50;
 
-  const raw = a / total;
+  const raw = a / total; // 0~1
   return smoothPercent(raw);
 }
 
 export function calculateMbtiRatios(scores: DimensionScore): MbtiRatios {
+  const e = calcPercent(scores.EI.E, scores.EI.I);
+  const s = calcPercent(scores.SN.S, scores.SN.N);
+  const t = calcPercent(scores.TF.T, scores.TF.F);
+  const j = calcPercent(scores.JP.J, scores.JP.P);
+
   return {
-    eRatio: calcPercent(scores.EI.E, scores.EI.I),
-    iRatio: calcPercent(scores.EI.I, scores.EI.E),
-
-    sRatio: calcPercent(scores.SN.S, scores.SN.N),
-    nRatio: calcPercent(scores.SN.N, scores.SN.S),
-
-    tRatio: calcPercent(scores.TF.T, scores.TF.F),
-    fRatio: calcPercent(scores.TF.F, scores.TF.T),
-
-    jRatio: calcPercent(scores.JP.J, scores.JP.P),
-    pRatio: calcPercent(scores.JP.P, scores.JP.J),
+    eRatio: e,
+    iRatio: 100 - e,
+    sRatio: s,
+    nRatio: 100 - s,
+    tRatio: t,
+    fRatio: 100 - t,
+    jRatio: j,
+    pRatio: 100 - j,
   };
 }
 
@@ -115,8 +117,12 @@ export function calculateExpressedStyle(scores: DimensionScore): string {
   return sn_expressed + tf_expressed;
 }
 
-function smoothPercent(raw: number): number {
-  const alpha = 0.65;
+function smoothPercent(raw: number) {
+  if (raw >= 0.7 || raw <= 0.3) {
+    return Math.round(raw * 100);
+  }
+
+  const alpha = 0.8;
   const eased = raw ** alpha / (raw ** alpha + (1 - raw) ** alpha);
   return Math.round(eased * 100);
 }
