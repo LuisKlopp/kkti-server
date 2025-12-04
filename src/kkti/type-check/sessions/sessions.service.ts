@@ -8,9 +8,9 @@ import { UserService } from 'src/kkti/user/user.service';
 import { DataSource, Repository } from 'typeorm';
 
 import {
-  applyTieBreakToDimension,
+  applyTieBreak,
   calculateExpressedStyle,
-  calculateMbti,
+  calculateMbtiByWinners,
   calculateMbtiRatios,
 } from '../../utils/mbti-utils';
 import { getSessionMutex } from '../../utils/mutex';
@@ -46,9 +46,7 @@ export class SessionsService {
     return this.sessionsRepository.save(session);
   }
 
-  async calculateMbtiResult(
-    sessionId: number,
-  ): Promise<{ mbti: string; expressedStyle: string }> {
+  async calculateMbtiResult(sessionId: number) {
     const mutex = getSessionMutex(sessionId);
     return await mutex.runExclusive(async () => {
       return await this.dataSource.transaction(async (manager) => {
@@ -72,7 +70,16 @@ export class SessionsService {
           JP: { J: 0, P: 0 },
         };
 
-        const tieData = {
+        const tieData: Record<
+          'EI' | 'SN' | 'TF' | 'JP',
+          {
+            heavyA: number;
+            heavyB: number;
+            countA: number;
+            countB: number;
+            lastChoice: 'A' | 'B';
+          }
+        > = {
           EI: { heavyA: 0, heavyB: 0, countA: 0, countB: 0, lastChoice: 'A' },
           SN: { heavyA: 0, heavyB: 0, countA: 0, countB: 0, lastChoice: 'A' },
           TF: { heavyA: 0, heavyB: 0, countA: 0, countB: 0, lastChoice: 'A' },
@@ -87,9 +94,7 @@ export class SessionsService {
           const data = tieData[dim];
 
           isA ? data.countA++ : data.countB++;
-
           if (weight === 2) isA ? data.heavyA++ : data.heavyB++;
-
           data.lastChoice = isA ? 'A' : 'B';
 
           switch (dimension) {
@@ -108,12 +113,15 @@ export class SessionsService {
           }
         });
 
-        scores.EI = applyTieBreakToDimension('EI', scores.EI, tieData.EI);
-        scores.SN = applyTieBreakToDimension('SN', scores.SN, tieData.SN);
-        scores.TF = applyTieBreakToDimension('TF', scores.TF, tieData.TF);
-        scores.JP = applyTieBreakToDimension('JP', scores.JP, tieData.JP);
+        // tie-break 승자 (점수에 더하지 않음)
+        const winners = {
+          EI: applyTieBreak({ A: scores.EI.E, B: scores.EI.I }, tieData.EI),
+          SN: applyTieBreak({ A: scores.SN.S, B: scores.SN.N }, tieData.SN),
+          TF: applyTieBreak({ A: scores.TF.T, B: scores.TF.F }, tieData.TF),
+          JP: applyTieBreak({ A: scores.JP.J, B: scores.JP.P }, tieData.JP),
+        };
 
-        const mbti = calculateMbti(scores);
+        const mbti = calculateMbtiByWinners(winners);
         const expressedStyle = calculateExpressedStyle(scores);
         const ratios = calculateMbtiRatios(scores);
 

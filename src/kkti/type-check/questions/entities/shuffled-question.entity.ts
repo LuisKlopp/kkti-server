@@ -8,7 +8,7 @@ import {
 
 import { Question } from './question.entity';
 
-@Entity({ database: 'kkti', name: 'shuffled_questions_v2' })
+@Entity({ database: 'kkti', name: 'shuffled_questions_v3' })
 export class ShuffledQuestion {
   @PrimaryGeneratedColumn()
   id: number;
