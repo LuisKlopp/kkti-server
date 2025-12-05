@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import * as bcrypt from 'bcrypt';
-import { FindOneOptions, Like, Repository } from 'typeorm';
+import { FindOneOptions, In, Like, Repository } from 'typeorm';
 
 import { Session } from '../type-check/sessions/entities/session.entity';
 import { CreateUserGeneralDto } from './dto/create-user-general.dto';
@@ -144,11 +144,37 @@ export class UserService {
       skip: (page - 1) * limit,
     });
 
+    const userIds = users.map((u) => u.id);
+
+    if (userIds.length === 0) {
+      return { total, page, limit, users };
+    }
+
+    const sessions = await this.sessionsRepository.find({
+      where: { userId: In(userIds) },
+      select: ['userId', 'mbtiResult'],
+      order: { createdAt: 'DESC' },
+    });
+
+    const sessionMap = new Map<number, any[]>();
+
+    sessions.forEach((s) => {
+      if (!sessionMap.has(s.userId)) {
+        sessionMap.set(s.userId, []);
+      }
+      sessionMap.get(s.userId)!.push(s);
+    });
+
+    const usersWithHistory = users.map((u) => ({
+      ...u,
+      sessions: sessionMap.get(u.id) ?? [],
+    }));
+
     return {
       total,
       page,
       limit,
-      users,
+      users: usersWithHistory,
     };
   }
 
