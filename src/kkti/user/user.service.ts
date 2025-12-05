@@ -195,24 +195,4 @@ export class UserService {
       user,
     };
   }
-
-  async getUserHistory(userId: number) {
-    const rawUser = await this.userRepository.findOne({
-      where: { id: userId },
-      select: ['consultingMbti'],
-    });
-
-    const sessions = await this.sessionsRepository.find({
-      where: { userId },
-      select: ['mbtiResult', 'createdAt'],
-      order: { createdAt: 'DESC' },
-    });
-
-    return {
-      user: {
-        consultingMbti: rawUser?.consultingMbti ?? null,
-      },
-      sessions,
-    };
-  }
 }
