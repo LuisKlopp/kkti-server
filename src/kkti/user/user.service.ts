@@ -152,7 +152,7 @@ export class UserService {
 
     const sessions = await this.sessionsRepository.find({
       where: { userId: In(userIds) },
-      select: ['userId', 'mbtiResult'],
+      select: ['userId', 'mbtiResult', 'createdAt'],
       order: { createdAt: 'DESC' },
     });
 
