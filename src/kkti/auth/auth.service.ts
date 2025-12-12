@@ -122,10 +122,7 @@ export class AuthService {
     res: Response,
   ) {
     const type = (req.query.state as string) || 'normal';
-    const redirectBaseUrl =
-      type === 'plain'
-        ? this.config.get<string>('CLIENT_AFTER_LOGIN_PLAIN_URL')
-        : this.config.get<string>('CLIENT_AFTER_LOGIN_URL');
+    const base = this.config.get<string>('CLIENT_AFTER_LOGIN_URL');
 
     try {
       const { snsId, provider, email } = user;
@@ -148,12 +145,12 @@ export class AuthService {
       const relayPayload = { accessToken, refreshToken };
       const relayToken = this.relayTokenService.sign(relayPayload);
 
-      return res.redirect(`${redirectBaseUrl}?token=${relayToken}`);
+      return res.redirect(`${base}?token=${relayToken}&type=${type}`);
     } catch (error) {
       const errorMessage = encodeURIComponent(
         error.message || '카카오 로그인 중 오류가 발생했습니다.',
       );
-      return res.redirect(`${redirectBaseUrl}?error=${errorMessage}`);
+      return res.redirect(`${base}?error=${errorMessage}`);
     }
   }
 

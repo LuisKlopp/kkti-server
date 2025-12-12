@@ -28,7 +28,7 @@ export class MbtiProfilesController {
     );
   }
 
-  @Get('expressed/main')
+  @Get('expressed')
   findAll() {
     return this.mbtiProfilesService.findAllExpressedProfiles();
   }

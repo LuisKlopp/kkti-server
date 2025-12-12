@@ -139,6 +139,7 @@ export class UserService {
         'consultingDate',
       ],
       where,
+
       order: { createdAt: 'DESC' },
       take: limit,
       skip: (page - 1) * limit,
