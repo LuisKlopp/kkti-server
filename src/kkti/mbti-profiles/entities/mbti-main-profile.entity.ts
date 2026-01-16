@@ -18,13 +18,13 @@ export class MbtiMainProfile {
   @Column({ type: 'text' })
   overview: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', select: false })
   strengths: string;
 
-  @Column({ type: 'text', name: 'love_style' })
+  @Column({ type: 'text', name: 'love_style', select: false })
   loveStyle: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', select: false })
   celebrities: string;
 
   @Column({ type: 'text', name: 'love_matches' })
@@ -33,6 +33,6 @@ export class MbtiMainProfile {
   @Column({ type: 'text', name: 'resembled_animal' })
   resembledAnimal: string;
 
-  @Column({ type: 'text', name: 'growth_points' })
+  @Column({ type: 'text', name: 'growth_points', select: false })
   growthPoints: string;
 }
